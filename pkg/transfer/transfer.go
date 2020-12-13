@@ -68,3 +68,4 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 	ok = true
 	return
 }
+
