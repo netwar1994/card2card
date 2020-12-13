@@ -18,7 +18,7 @@ type Card struct {
 	Icon string
 }
 
-func (s *Service) IssueCard(issuer string, currency string, balance int64, number string) *Card {
+func (s *Service) AddCard(issuer string, currency string, balance int64, number string) *Card {
 	card := &Card{
 		Issuer: issuer,
 		Balance: balance,

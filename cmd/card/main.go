@@ -8,8 +8,8 @@ import (
 
 func main(){
 	service := card.NewService("Netology Bank")
-	card1 := service.IssueCard("visa", "USD", 5000_00, "0001")
-	card2 := service.IssueCard("visa", "USD", 1000_00, "0002")
+	card1 := service.AddCard("visa", "USD", 5000_00, "0001")
+	card2 := service.AddCard("visa", "USD", 1000_00, "0002")
 
 
 	transNetToNet := transfer.NewService(service, 0, 0)
