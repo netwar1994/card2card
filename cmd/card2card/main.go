@@ -25,7 +25,7 @@ func main(){
 	transOtherToOther := transfer.NewService(service, 15_0, 30_00)
 	fmt.Println(transOtherToOther.Card2Card("0003", "0004", 3000_00))
 
-	fmt.Println("Balance of first card:", service.SearchByNumber("0001").Balance)
-	fmt.Println("Balance of second card:", service.SearchByNumber("0002").Balance)
+	fmt.Println("Balance of first card2card:", service.SearchByNumber("0001").Balance)
+	fmt.Println("Balance of second card2card:", service.SearchByNumber("0002").Balance)
 
 }
