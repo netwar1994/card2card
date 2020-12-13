@@ -15,57 +15,46 @@ func NewService(cardSvc *card.Service, percent int64, min int64) *Service {
 }
 
 func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool) {
-	if s.CardSvc.SearchByNumber(from) != nil && s.CardSvc.SearchByNumber(to) != nil {
-		if s.CardSvc.SearchByNumber(from).Balance > amount {
-			s.CardSvc.SearchByNumber(from).Balance -= amount
-			s.CardSvc.SearchByNumber(to).Balance += amount
-			total = amount
-			ok = true
-			return
+	commission := amount / 100_00 * s.Percent
+	fromCard := s.CardSvc.SearchByNumber(from)
+	toCard := s.CardSvc.SearchByNumber(to)
+
+	if fromCard != nil && toCard != nil {
+		if fromCard.Balance > amount {
+			fromCard.Balance -= amount
+			toCard.Balance += amount
+			return amount, true
 		}
-		total = amount
-		ok = false
-		return
+		return amount, false
 	}
 
-	if s.CardSvc.SearchByNumber(from) != nil {
-		if s.CardSvc.SearchByNumber(from).Balance > amount {
-			if s.Min > (amount / 100_00 * s.Percent){
+	if fromCard != nil {
+		if fromCard.Balance > amount {
+			if s.Min > commission{
 				total = amount + s.Min
-				s.CardSvc.SearchByNumber(from).Balance -= total
-				ok = true
-				return
+				fromCard.Balance -= total
+				return total, true
 			}
-			total = amount + (amount / 100_00 * s.Percent)
-			s.CardSvc.SearchByNumber(from).Balance -= total
-			ok = true
-			return
+			total = amount + commission
+			fromCard.Balance -= total
+			return total, true
 		}
-		total = amount
-		ok = false
-		return
+		return amount + commission, false
 	}
 
-	if s.CardSvc.SearchByNumber(to) != nil {
-		if s.Min > (amount / 100_00 * s.Percent) {
-			s.CardSvc.SearchByNumber(to).Balance += amount
-			total = amount + s.Min
-			ok = true
-			return
+	if toCard != nil {
+		if s.Min > commission {
+			toCard.Balance += amount
+			return amount + s.Min, true
 		}
-		s.CardSvc.SearchByNumber(to).Balance += amount
-		total = amount + (amount / 100_00 * s.Percent)
-		ok = true
-		return
+		toCard.Balance += amount
+		return amount + commission, true
 	}
 
-	if s.Min > (amount / 100_00 * s.Percent) {
-		total = amount + s.Min
-		ok = true
-		return
+	if s.Min > commission {
+		return amount + s.Min, true
 	}
-	total = amount + (amount / 100_00 * s.Percent)
-	ok = true
-	return
+
+	return amount + commission, true
 }
 
