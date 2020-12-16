@@ -102,7 +102,7 @@ func TestService_Card2Card(t *testing.T) {
 				to:     "0003",
 				amount: 1_00_00,
 			},
-			wantTotal: 1_30_00,
+			wantTotal: 1_30_01,
 			wantOk: true},
 	}
 		for _, tt := range tests {
