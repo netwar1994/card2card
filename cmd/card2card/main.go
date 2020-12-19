@@ -8,8 +8,8 @@ import (
 
 func main() {
 	service := card.NewService("Netology Bank")
-	card1 := service.AddCard("visa", "USD", 5000_00, "0001")
-	card2 := service.AddCard("visa", "USD", 1000_00, "0002")
+	card1 := service.AddCard("visa", "USD", 5000_00, "5106 2100 0000 0001")
+	card2 := service.AddCard("visa", "USD", 1000_00, "5106 2100 0000 0002")
 
 	//"Карта своего банка -> Карта своего банка (денег достаточно). Без комиссии"
 	transNetToNet := transfer.NewService(service, 0, 0)
@@ -29,7 +29,7 @@ func main() {
 	transOtherToOther := transfer.NewService(service, 15_0, 30_00)
 	fmt.Println(transOtherToOther.Card2Card("0003", "0004", 3000_00))
 
-	fmt.Println("Balance of first card2card:", service.SearchByNumber("0001").Balance)
-	fmt.Println("Balance of second card2card:", service.SearchByNumber("0002").Balance)
+	fmt.Println("Balance of first card2card:", service.SearchByNumber("5106 2100 0000 0001").Balance)
+	fmt.Println("Balance of second card2card:", service.SearchByNumber("5106 2100 0000 0002").Balance)
 
 }

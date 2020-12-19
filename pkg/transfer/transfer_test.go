@@ -17,8 +17,8 @@ func TestService_Card2Card(t *testing.T) {
 		amount int64
 	}
 	cardSvc := card.NewService("Our Bank")
-	card1 := cardSvc.AddCard("visa", "USD", 5_000_00, "0001")
-	card2 := cardSvc.AddCard("visa", "USD", 1_000_00, "0002")
+	card1 := cardSvc.AddCard("visa", "USD", 5_000_00, "5106 2100 0000 0001")
+	card2 := cardSvc.AddCard("visa", "USD", 1_000_00, "5106 2100 0000 0002")
 	tests := []struct {
 		name      string
 		fields    fields

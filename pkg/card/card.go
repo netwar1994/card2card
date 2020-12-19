@@ -1,5 +1,7 @@
 package card
 
+import "strings"
+
 type Service struct {
 	BankName string
 	Cards    []*Card
@@ -30,6 +32,11 @@ func (s *Service) AddCard(issuer string, currency string, balance int64, number 
 }
 
 func (s *Service) SearchByNumber(number string) *Card {
+	const prefix = "5106 21"
+	if strings.HasPrefix(number, prefix) != true {
+		return nil
+	}
+
 	for _, card := range s.Cards {
 		if card.Number == number {
 			return card
