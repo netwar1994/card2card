@@ -17,33 +17,20 @@ func TestService_Card2Card(t *testing.T) {
 		amount int64
 	}
 	cardSvc := card.NewService("Our Bank")
-	card1 := cardSvc.AddCard("visa", "USD", 5_000_00, "0001")
-	card2 := cardSvc.AddCard("visa", "USD", 1_000_00, "0002")
+	card1 := cardSvc.AddCard("visa", "USD", 5_000_00, "5106 2142 4434 5467")
+	card2 := cardSvc.AddCard("visa", "USD", 1_000_00, "5106 2145 6743 6901")
 	tests := []struct {
 		name      string
 		fields    fields
 		args      args
 		wantTotal int64
-		wantOk    bool
+		wantOk    error
 	}{
-		{name: "Карта своего банка -> Карта своего банка (денег достаточно)",
+		{name: "Недостаточно денег",
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 5_0,
-				Min:    10_0,
-			},
-			args: args{
-				from:   card1.Number,
-				to:     card2.Number,
-				amount: 1_000_00,
-			},
-		wantTotal: 1_000_00,
-		wantOk: true},
-		{name: "Карта своего банка -> Карта своего банка (денег недостаточно)",
-			fields: fields{
-				CardSvc: cardSvc,
-				Percent: 5_0,
-				Min:    10_00,
+				Min:     10_0,
 			},
 			args: args{
 				from:   card1.Number,
@@ -51,61 +38,48 @@ func TestService_Card2Card(t *testing.T) {
 				amount: 6_000_00,
 			},
 			wantTotal: 6_000_00,
-			wantOk: false},
-		{name: "Карта своего банка -> Карта чужого банка (денег достаточно)",
+			wantOk:    ErrNotEnoughMoney},
+		{name: "Достаточно денег",
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 5_0,
-				Min:    10_00,
+				Min:     10_00,
 			},
 			args: args{
 				from:   card1.Number,
-				to:     "0003",
+				to:     card2.Number,
+				amount: 3_000_00,
+			},
+			wantTotal: 3_015_00,
+			wantOk:    nil},
+		{name: "Карта получателя не существует",
+			fields: fields{
+				CardSvc: cardSvc,
+				Percent: 5_0,
+				Min:     10_00,
+			},
+			args: args{
+				from:   card1.Number,
+				to:     "5106 2145 6743 5903",
 				amount: 1_000_00,
 			},
-			wantTotal: 1_010_00,
-			wantOk: true},
-		{name: "Карта своего банка -> Карта чужого банка (денег недостаточно)",
+			wantTotal: 1_000_00,
+			wantOk:    card.ErrCardNotFound},
+		{name: "Неправильный номер карты",
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 5_0,
-				Min:    10_00,
+				Min:     10_00,
 			},
 			args: args{
-				from:   card1.Number,
-				to:     "0003",
+				from:   "5106 2145 6743 5908",
+				to:     card1.Number,
 				amount: 6_000_00,
 			},
-			wantTotal: 6_030_00,
-			wantOk: false},
-		{name: "Карта чужого банка -> Карта чужого банка",
-			fields: fields{
-				CardSvc: cardSvc,
-				Percent: 15_0,
-				Min:    30_00,
-			},
-			args: args{
-				from:   "0004",
-				to:     "0003",
-				amount: 6_000_00,
-			},
-			wantTotal: 6_090_00,
-			wantOk: true},
-		{name: "Карта чужого банка -> Карта чужого банка",
-			fields: fields{
-				CardSvc: cardSvc,
-				Percent: 15_0,
-				Min:    30_00,
-			},
-			args: args{
-				from:   "0004",
-				to:     "0003",
-				amount: 1_00_00,
-			},
-			wantTotal: 1_30_00,
-			wantOk: true},
+			wantTotal: 6_000_00,
+			wantOk:    ErrInvalidCardNumber},
 	}
-		for _, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				CardSvc: tt.fields.CardSvc,
@@ -118,6 +92,37 @@ func TestService_Card2Card(t *testing.T) {
 			}
 			if gotOk != tt.wantOk {
 				t.Errorf("Card2Card() gotOk = %v, want %v", gotOk, tt.wantOk)
+			}
+		})
+	}
+}
+
+func TestIsValid(t *testing.T) {
+	type args struct {
+		number string
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{name: "Правильный номер карты",
+			args: args{
+				number: "5106 2142 4434 5467",
+			},
+			want: true,
+		},
+		{name: "Неправильный номер карты",
+			args: args{
+				number: "5106 2142 4434 5468",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsValid(tt.args.number); got != tt.want {
+				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

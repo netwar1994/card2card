@@ -1,60 +1,97 @@
 package transfer
 
 import (
+	"errors"
 	"github.com/netwar1994/card2card/pkg/card"
+	"strconv"
+	"strings"
+)
+
+const lenOfNumbers = 16
+
+var (
+	ErrNotEnoughMoney    = errors.New("not enough money")
+	ErrInvalidCardNumber = errors.New("invalid card number")
 )
 
 type Service struct {
 	CardSvc *card.Service
 	Percent int64
-	Min int64
+	Min     int64
 }
 
 func NewService(cardSvc *card.Service, percent int64, min int64) *Service {
 	return &Service{CardSvc: cardSvc, Percent: percent, Min: min}
 }
 
-func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool) {
-	commission := amount / 100_00 * s.Percent
-	fromCard := s.CardSvc.SearchByNumber(from)
-	toCard := s.CardSvc.SearchByNumber(to)
+func IsValid(number string) bool {
+	number = strings.ReplaceAll(number, " ", "")
 
-	if fromCard != nil && toCard != nil {
-		if fromCard.Balance > amount {
-			fromCard.Balance -= amount
-			toCard.Balance += amount
-			return amount, true
+	if len(number) != lenOfNumbers {
+		return false
+	}
+	numbers := strings.Split(number, "")
+	numbersInt := make([]int, lenOfNumbers)
+
+	for i, value := range numbers {
+		var err interface{}
+		numbersInt[i], err = strconv.Atoi(value)
+		if err != nil {
+			return false
 		}
-		return amount, false
 	}
 
-	if fromCard != nil {
-		if fromCard.Balance > amount {
-			if s.Min > commission{
-				total = amount + s.Min
-				fromCard.Balance -= total
-				return total, true
-			}
-			total = amount + commission
-			fromCard.Balance -= total
-			return total, true
-		}
-		return amount + commission, false
-	}
+	return checkLuhn(numbersInt)
 
-	if toCard != nil {
-		if s.Min > commission {
-			toCard.Balance += amount
-			return amount + s.Min, true
-		}
-		toCard.Balance += amount
-		return amount + commission, true
-	}
-
-	if s.Min > commission {
-		return amount + s.Min, true
-	}
-
-	return amount + commission, true
 }
 
+func checkLuhn(numbers []int) bool {
+	checkSum := 0
+	for i := 0; i < lenOfNumbers; i += 2 {
+		number := numbers[i] * 2
+
+		if number > 9 {
+			number -= 9
+		}
+		numbers[i] = number
+	}
+
+	for _, i := range numbers {
+		checkSum += i
+	}
+
+	if checkSum%10 == 0 {
+		return true
+	}
+	return false
+}
+
+func (s *Service) Card2Card(from, to string, amount int64) (int64, error) {
+	if !IsValid(from) || !IsValid(to) {
+		return amount, ErrInvalidCardNumber
+	}
+
+	commission := amount / 100_00 * s.Percent
+	if s.Min > commission {
+		commission = s.Min
+	}
+
+	fromCard, err := s.CardSvc.SearchByNumber(from)
+	if err != nil {
+		return amount, err
+	}
+
+	toCard, err := s.CardSvc.SearchByNumber(to)
+	if err != nil {
+		return amount, err
+	}
+
+	if fromCard != nil && fromCard.Balance < amount {
+		return amount, ErrNotEnoughMoney
+	}
+
+	fromCard.Balance -= amount + commission
+	toCard.Balance += amount + commission
+
+	return amount + commission, nil
+}
