@@ -30,20 +30,20 @@ func TestService_Card2Card(t *testing.T) {
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 5_0,
-				Min:    10_0,
+				Min:     10_0,
 			},
 			args: args{
 				from:   card1.Number,
 				to:     card2.Number,
 				amount: 1_000_00,
 			},
-		wantTotal: 1_000_00,
-		wantOk: true},
+			wantTotal: 1_000_00,
+			wantOk:    true},
 		{name: "Карта своего банка -> Карта своего банка (денег недостаточно)",
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 5_0,
-				Min:    10_00,
+				Min:     10_00,
 			},
 			args: args{
 				from:   card1.Number,
@@ -51,12 +51,12 @@ func TestService_Card2Card(t *testing.T) {
 				amount: 6_000_00,
 			},
 			wantTotal: 6_000_00,
-			wantOk: false},
+			wantOk:    false},
 		{name: "Карта своего банка -> Карта чужого банка (денег достаточно)",
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 5_0,
-				Min:    10_00,
+				Min:     10_00,
 			},
 			args: args{
 				from:   card1.Number,
@@ -64,25 +64,25 @@ func TestService_Card2Card(t *testing.T) {
 				amount: 1_000_00,
 			},
 			wantTotal: 1_010_00,
-			wantOk: true},
+			wantOk:    true},
 		{name: "Карта своего банка -> Карта чужого банка (денег недостаточно)",
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 5_0,
-				Min:    10_00,
+				Min:     10_00,
 			},
 			args: args{
 				from:   card1.Number,
 				to:     "0003",
 				amount: 6_000_00,
 			},
-			wantTotal: 6_030_00,
-			wantOk: false},
+			wantTotal: 6_000_00,
+			wantOk:    false},
 		{name: "Карта чужого банка -> Карта чужого банка",
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 15_0,
-				Min:    30_00,
+				Min:     30_00,
 			},
 			args: args{
 				from:   "0004",
@@ -90,12 +90,12 @@ func TestService_Card2Card(t *testing.T) {
 				amount: 6_000_00,
 			},
 			wantTotal: 6_090_00,
-			wantOk: true},
+			wantOk:    true},
 		{name: "Карта чужого банка -> Карта чужого банка",
 			fields: fields{
 				CardSvc: cardSvc,
 				Percent: 15_0,
-				Min:    30_00,
+				Min:     30_00,
 			},
 			args: args{
 				from:   "0004",
@@ -103,9 +103,9 @@ func TestService_Card2Card(t *testing.T) {
 				amount: 1_00_00,
 			},
 			wantTotal: 1_30_00,
-			wantOk: true},
+			wantOk:    true},
 	}
-		for _, tt := range tests {
+	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &Service{
 				CardSvc: tt.fields.CardSvc,
