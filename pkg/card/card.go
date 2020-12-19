@@ -1,6 +1,9 @@
 package card
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
 
 type Service struct {
 	BankName string
@@ -31,16 +34,18 @@ func (s *Service) AddCard(issuer string, currency string, balance int64, number 
 	return card
 }
 
-func (s *Service) SearchByNumber(number string) *Card {
-	const prefix = "5106 21"
-	if strings.HasPrefix(number, prefix) != true {
-		return nil
-	}
+var ErrCardNotFound = errors.New("card not found")
 
-	for _, card := range s.Cards {
-		if card.Number == number {
-			return card
+func (s *Service) SearchByNumber(number string) (*Card, error) {
+	const prefix = "5106 21"
+
+	if strings.HasPrefix(number, prefix) == true {
+		for _, card := range s.Cards {
+			if card.Number == number {
+				return card, nil
+			}
 		}
 	}
-	return nil
+
+	return nil, ErrCardNotFound
 }
